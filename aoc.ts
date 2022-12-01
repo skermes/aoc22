@@ -18,14 +18,14 @@ function withInput(day: number, callback: (result: InputResult) => void): void {
   }
 
   const now = new Date();
-  if (now < new Date(2022, 12, day)) {
+  if (now < new Date(2022, 11, day)) {
     callback({ err: "notYet" });
     return;
   }
 
   try {
     const data = fs.readFileSync(`./inputs/${day}.txt`);
-    callback({ ok: data.toString() });
+    callback({ ok: data.toString().trim() });
   } catch {
     https.get(
       `https://adventofcode.com/2022/day/${day}/input`,
@@ -37,7 +37,7 @@ function withInput(day: number, callback: (result: InputResult) => void): void {
           fs.writeFile(`inputs/${day}.txt`, body, () => {
             return;
           });
-          callback({ ok: body });
+          callback({ ok: body.trim() });
         });
         response.on("error", () =>
           callback({
