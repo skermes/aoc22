@@ -104,8 +104,8 @@ function runDay(input: InputResult, day: Day): bigint {
 }
 
 var totalDuration = 0n;
-withInput(1, (result) => totalDuration += runDay(result, day1));
-withInput(2, (result) => totalDuration += runDay(result, day2));
+withInput(1, (result) => (totalDuration += runDay(result, day1)));
+withInput(2, (result) => (totalDuration += runDay(result, day2)));
 
-console.log(''.padEnd(70, '─'))
-console.log('Total:', fmtDuration(totalDuration).padStart(62));
+console.log("".padEnd(70, "─"));
+console.log("Total:", fmtDuration(totalDuration).padStart(62));
