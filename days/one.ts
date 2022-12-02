@@ -1,5 +1,7 @@
 import { Result } from "../shared/shared";
 
+export const name = "Calorie Counting";
+
 export function partOne(input: string): Result<string, string> {
   const calories = input.split("\n\n").map((elf) =>
     elf

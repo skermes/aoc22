@@ -8,7 +8,8 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "target": "ES2020"
   },
   "ts-node": {
     "files": true

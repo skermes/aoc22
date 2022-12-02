@@ -2,12 +2,18 @@
 
 import fs from "fs";
 import https from "https";
+import process from "process";
 import { isOk, Result } from "./shared/shared";
 
 import * as day1 from "./days/one";
+import * as day2 from "./days/two";
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
-type Day = { partOne: (input: string) => Result<string, string>; partTwo: (input: string) => Result<string, string> };
+type Day = {
+  name: string;
+  partOne: (input: string) => Result<string, string>;
+  partTwo: (input: string) => Result<string, string>;
+};
 
 const sessionCookie = fs.readFileSync("COOKIE").toString().trim();
 
@@ -49,13 +55,57 @@ function withInput(day: number, callback: (result: InputResult) => void): void {
   }
 }
 
-function runDay(input: InputResult, day: Day) {
-  if (isOk(input)) {
-    console.log(day.partOne(input.ok));
-    console.log(day.partTwo(input.ok));
+function time<T>(fn: () => T): [T, bigint] {
+  const start = process.hrtime.bigint();
+  const value = fn();
+  const nanos = process.hrtime.bigint() - start;
+  return [value, nanos];
+}
+
+function fmtDuration(nanos: bigint): string {
+  if (nanos < 1_000) {
+    return `${nanos}ns`;
+  } else if (nanos < 1_000_000) {
+    return `${nanos / 1000n}µs`;
+  } else if (nanos < 1_000_000_000) {
+    return `${nanos / 1_000_000n}ms`;
   } else {
-    console.log(input.err);
+    return `${nanos / 1_000_000_000n}s`;
   }
 }
 
-withInput(1, (result) => runDay(result, day1));
+function runDay(input: InputResult, day: Day): bigint {
+  console.log(day.name);
+
+  var duration = 0n;
+  if (isOk(input)) {
+    const [resultOne, durationOne] = time(day.partOne.bind(null, input.ok));
+    if (isOk(resultOne)) {
+      console.log("🟢", resultOne.ok.padEnd(60), fmtDuration(durationOne));
+    } else {
+      console.log("❗️", resultOne.err);
+    }
+
+    const [resultTwo, durationTwo] = time(day.partTwo.bind(null, input.ok));
+    if (isOk(resultTwo)) {
+      console.log("🟢", resultTwo.ok.padEnd(60), fmtDuration(durationTwo));
+    } else {
+      console.log("❗️", resultTwo.err);
+    }
+
+    duration = durationOne + durationTwo;
+  } else {
+    console.log("❗️", input.err);
+  }
+
+  console.log();
+
+  return duration;
+}
+
+var totalDuration = 0n;
+withInput(1, (result) => totalDuration += runDay(result, day1));
+withInput(2, (result) => totalDuration += runDay(result, day2));
+
+console.log(''.padEnd(70, '─'))
+console.log('Total:', fmtDuration(totalDuration).padStart(62));
