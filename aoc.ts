@@ -8,6 +8,7 @@ import { isOk, Result } from "./shared/shared";
 import * as day1 from "./days/one";
 import * as day2 from "./days/two";
 import * as day3 from "./days/three";
+import * as day4 from "./days/four";
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
 type Day = {
@@ -108,6 +109,7 @@ var totalDuration = 0n;
 withInput(1, (result) => (totalDuration += runDay(result, day1)));
 withInput(2, (result) => (totalDuration += runDay(result, day2)));
 withInput(3, (result) => (totalDuration += runDay(result, day3)));
+withInput(4, (result) => (totalDuration += runDay(result, day4)));
 
 console.log("".padEnd(70, "─"));
 console.log("Total:", fmtDuration(totalDuration).padStart(62));
