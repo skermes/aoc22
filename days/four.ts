@@ -25,11 +25,7 @@ function within(target: number, range: { start: number; end: number }) {
 }
 
 export function partOne(input: string): Result<string, string> {
-  const start = process.hrtime.bigint();
   const pairs = input.split("\n").mapFallible(parsePair);
-  const parseTime = process.hrtime.bigint() - start;
-
-  console.log("partone parse nanos", parseTime);
 
   if (!isOk(pairs)) {
     return pairs;
