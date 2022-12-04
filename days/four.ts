@@ -1,6 +1,6 @@
 import { isOk, Result } from "../shared/shared";
 
-export const name = "Day Four";
+export const name = "Camp Cleanup";
 
 const PATTERN = /^(\d+)-(\d+),(\d+)-(\d+)$/;
 function parsePair(line: string) {
