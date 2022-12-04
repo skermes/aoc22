@@ -12,16 +12,11 @@ function parsePair(line: string) {
     return result;
   }
 
-  const lstartNum = Number.parseInt(lstart);
-  const lendNum = Number.parseInt(lend);
-  const rstartNum = Number.parseInt(rstart);
-  const rendNum = Number.parseInt(rend);
-  if (lstartNum === undefined || lendNum === undefined || rstartNum === undefined || rendNum === undefined) {
-    return { err: `badParse ${line}` };
-  }
-
   return {
-    ok: { left: { start: lstartNum, end: lendNum }, right: { start: rstartNum, end: rendNum } },
+    ok: {
+      left: { start: Number.parseInt(lstart), end: Number.parseInt(lend) },
+      right: { start: Number.parseInt(rstart), end: Number.parseInt(rend) },
+    },
   };
 }
 
