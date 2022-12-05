@@ -9,6 +9,7 @@ import * as day1 from "./days/one";
 import * as day2 from "./days/two";
 import * as day3 from "./days/three";
 import * as day4 from "./days/four";
+import * as day5 from "./days/five";
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
 type Day = {
@@ -69,6 +70,10 @@ function fmtDuration(nanos: bigint): string {
     return `${nanos}ns`;
   } else if (nanos < 1_000_000) {
     return `${nanos / 1000n}µs`;
+  } else if (nanos < 10_000_000) {
+    const millis = nanos / 1_000_000n;
+    const hundred_micros = (nanos - millis * 1_000_000n) / 100_000n;
+    return `${millis}.${hundred_micros}ms`;
   } else if (nanos < 1_000_000_000) {
     return `${nanos / 1_000_000n}ms`;
   } else {
@@ -110,6 +115,7 @@ withInput(1, (result) => (totalDuration += runDay(result, day1)));
 withInput(2, (result) => (totalDuration += runDay(result, day2)));
 withInput(3, (result) => (totalDuration += runDay(result, day3)));
 withInput(4, (result) => (totalDuration += runDay(result, day4)));
+withInput(5, (result) => (totalDuration += runDay(result, day5)));
 
 console.log("".padEnd(70, "─"));
 console.log("Total:", fmtDuration(totalDuration).padStart(62));
