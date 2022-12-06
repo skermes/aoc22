@@ -10,6 +10,7 @@ import * as day2 from "./days/two";
 import * as day3 from "./days/three";
 import * as day4 from "./days/four";
 import * as day5 from "./days/five";
+import * as day6 from "./days/six";
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
 type Day = {
@@ -116,6 +117,7 @@ withInput(2, (result) => (totalDuration += runDay(result, day2)));
 withInput(3, (result) => (totalDuration += runDay(result, day3)));
 withInput(4, (result) => (totalDuration += runDay(result, day4)));
 withInput(5, (result) => (totalDuration += runDay(result, day5)));
+withInput(6, (result) => (totalDuration += runDay(result, day6)));
 
 console.log("".padEnd(70, "─"));
 console.log("Total:", fmtDuration(totalDuration).padStart(62));
