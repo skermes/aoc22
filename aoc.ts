@@ -11,6 +11,7 @@ import * as day3 from "./days/three";
 import * as day4 from "./days/four";
 import * as day5 from "./days/five";
 import * as day6 from "./days/six";
+import * as day7 from "./days/seven";
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
 type Day = {
@@ -66,6 +67,16 @@ function time<T>(fn: () => T): [T, bigint] {
   return [value, nanos];
 }
 
+function trap<T>(fn: () => Result<T, string>): () => Result<T, string> {
+  return () => {
+    try {
+      return fn();
+    } catch (e) {
+      return { err: (e as Object).toString() };
+    }
+  };
+}
+
 function fmtDuration(nanos: bigint): string {
   if (nanos < 1_000) {
     return `${nanos}ns`;
@@ -87,14 +98,14 @@ function runDay(input: InputResult, day: Day): bigint {
 
   var duration = 0n;
   if (isOk(input)) {
-    const [resultOne, durationOne] = time(day.partOne.bind(null, input.ok));
+    const [resultOne, durationOne] = time(trap(day.partOne.bind(null, input.ok)));
     if (isOk(resultOne)) {
       console.log("🟢", resultOne.ok.padEnd(60), fmtDuration(durationOne));
     } else {
       console.log("❗️", resultOne.err);
     }
 
-    const [resultTwo, durationTwo] = time(day.partTwo.bind(null, input.ok));
+    const [resultTwo, durationTwo] = time(trap(day.partTwo.bind(null, input.ok)));
     if (isOk(resultTwo)) {
       console.log("🟢", resultTwo.ok.padEnd(60), fmtDuration(durationTwo));
     } else {
@@ -118,6 +129,7 @@ withInput(3, (result) => (totalDuration += runDay(result, day3)));
 withInput(4, (result) => (totalDuration += runDay(result, day4)));
 withInput(5, (result) => (totalDuration += runDay(result, day5)));
 withInput(6, (result) => (totalDuration += runDay(result, day6)));
+withInput(7, (result) => (totalDuration += runDay(result, day7)));
 
 console.log("".padEnd(70, "─"));
 console.log("Total:", fmtDuration(totalDuration).padStart(62));
