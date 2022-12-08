@@ -146,14 +146,14 @@ function runDay(input: InputResult, day: Day): bigint {
   if (isOk(input)) {
     const [resultOne, durationOne] = time(trap(day.partOne.bind(null, input.ok)));
     if (isOk(resultOne)) {
-      console.log("🟢", resultOne.ok.padEnd(60), fmtDuration(durationOne));
+      console.log("🟢", resultOne.ok.padEnd(60), fmtDuration(durationOne).padStart(5));
     } else {
       console.log("❗️", resultOne.err);
     }
 
     const [resultTwo, durationTwo] = time(trap(day.partTwo.bind(null, input.ok)));
     if (isOk(resultTwo)) {
-      console.log("🟢", resultTwo.ok.padEnd(60), fmtDuration(durationTwo));
+      console.log("🟢", resultTwo.ok.padEnd(60), fmtDuration(durationTwo).padStart(5));
     } else {
       console.log("❗️", resultTwo.err);
     }
