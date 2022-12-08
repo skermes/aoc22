@@ -12,6 +12,52 @@ import * as day4 from "./days/four";
 import * as day5 from "./days/five";
 import * as day6 from "./days/six";
 import * as day7 from "./days/seven";
+import * as day8 from "./days/eight";
+import * as day9 from "./days/nine";
+import * as day10 from "./days/ten";
+import * as day11 from "./days/eleven";
+import * as day12 from "./days/twelve";
+import * as day13 from "./days/thirteen";
+import * as day14 from "./days/fourteen";
+import * as day15 from "./days/fifteen";
+import * as day16 from "./days/sixteen";
+import * as day17 from "./days/seventeen";
+import * as day18 from "./days/eighteen";
+import * as day19 from "./days/nineteen";
+import * as day20 from "./days/twenty";
+import * as day21 from "./days/twenty-one";
+import * as day22 from "./days/twenty-two";
+import * as day23 from "./days/twenty-three";
+import * as day24 from "./days/twenty-four";
+import * as day25 from "./days/twenty-five";
+
+const DAY_MODULES = [
+  day1,
+  day2,
+  day3,
+  day4,
+  day5,
+  day6,
+  day7,
+  day8,
+  day9,
+  day10,
+  day11,
+  day12,
+  day13,
+  day14,
+  day15,
+  day16,
+  day17,
+  day18,
+  day19,
+  day20,
+  day21,
+  day22,
+  day23,
+  day24,
+  day25,
+];
 
 type InputResult = Result<string, "badDay" | "notYet" | "badFetch">;
 type Day = {
@@ -122,14 +168,21 @@ function runDay(input: InputResult, day: Day): bigint {
   return duration;
 }
 
+const dayArg = Number.parseInt(process.argv[process.argv.length - 1] || "");
+const targetDays = Number.isNaN(dayArg)
+  ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+  : [dayArg];
+
 var totalDuration = 0n;
-withInput(1, (result) => (totalDuration += runDay(result, day1)));
-withInput(2, (result) => (totalDuration += runDay(result, day2)));
-withInput(3, (result) => (totalDuration += runDay(result, day3)));
-withInput(4, (result) => (totalDuration += runDay(result, day4)));
-withInput(5, (result) => (totalDuration += runDay(result, day5)));
-withInput(6, (result) => (totalDuration += runDay(result, day6)));
-withInput(7, (result) => (totalDuration += runDay(result, day7)));
+
+targetDays.forEach((i) => {
+  const day = DAY_MODULES[i - 1];
+  if (!day) {
+    console.log("❗️ Unknown day", day);
+  } else {
+    withInput(i, (result) => (totalDuration += runDay(result, day)));
+  }
+});
 
 console.log("".padEnd(70, "─"));
 console.log("Total:", fmtDuration(totalDuration).padStart(62));
