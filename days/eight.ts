@@ -1,4 +1,4 @@
-import { Result } from "../shared/shared";
+import { Result, zip2, zip4 } from "../shared/shared";
 
 export const name = "Day Eight";
 
@@ -29,54 +29,19 @@ function transposeMatrix<T>(matrix: T[][]) {
 }
 
 function visibleTrees(row: number[]) {
-  return row
-    .reduce(
-      (acc, nextTree) => {
-        const prevTree = acc[acc.length - 1];
-        if (!prevTree) {
-          return [{ maxHeight: nextTree, visible: true }];
-        } else {
-          acc.push({ maxHeight: Math.max(prevTree.maxHeight, nextTree), visible: nextTree > prevTree.maxHeight });
-          return acc;
-        }
-      },
-      [{ maxHeight: -1, visible: false }]
-    )
-    .map((annotated) => annotated.visible)
-    .slice(1);
+  const maxs = row.reductions((a, b) => Math.max(a, b), -1);
+  return zip2(row, maxs).map(([tree, max]) => tree > max);
 }
 
 function axisScenicScore(row: number[]) {
-  return row
-    .reduce(
-      (acc, nextTree, i) => {
-        const prevTree = acc[acc.length - 1] as {
-          lastAtLeast: [number, number, number, number, number, number, number, number, number];
-          vision: number;
-        };
-        const vision = i - (prevTree.lastAtLeast[nextTree] || 0);
-        const newLast = [...prevTree.lastAtLeast];
-        for (var j = 0; j <= nextTree; j++) {
-          newLast[j] = i;
-        }
-        acc.push({ lastAtLeast: newLast, vision });
-        return acc;
-      },
-      [{ lastAtLeast: [0, 0, 0, 0, 0, 0, 0, 0, 0], vision: 0 }]
-    )
-    .map((annotated) => annotated.vision)
-    .slice(1);
-}
+  const lastSeenAts = row.reductions(
+    (lastSeenAt, nextTree, nextLoc) => {
+      return lastSeenAt.map((loc, height) => (height <= nextTree ? nextLoc : loc));
+    },
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  );
 
-function zip4<T>(as: T[], bs: T[], cs: T[], ds: T[]): Array<[T, T, T, T]> {
-  const vals = [];
-  const len = Math.min(as.length, bs.length, cs.length, ds.length);
-  for (var i = 0; i < len; i++) {
-    // Because len is the min all these indexes are safe.
-    const val = [as[i] as T, bs[i] as T, cs[i] as T, ds[i] as T] as [T, T, T, T];
-    vals.push(val);
-  }
-  return vals;
+  return zip2(row, lastSeenAts).map(([tree, lastSeenAt], i) => i - (lastSeenAt[tree] || 0));
 }
 
 export function partOne(input: string): Result<string, string> {
