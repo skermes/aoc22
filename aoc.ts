@@ -86,7 +86,9 @@ function withInput(day: number, callback: (result: InputResult) => void): void {
   } catch {
     https.get(
       `https://adventofcode.com/2022/day/${day}/input`,
-      { headers: { Cookie: `session=${sessionCookie}` } },
+      {
+        headers: { Cookie: `session=${sessionCookie}`, "User-Agent": "github.com/skermes/aoc22 by skermes@gmail.com" },
+      },
       (response) => {
         var body = "";
         response.on("data", (chunk) => (body += chunk));
