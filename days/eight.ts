@@ -1,6 +1,6 @@
 import { Result, zip2, zip4 } from "../shared/shared";
 
-export const name = "Day Eight";
+export const name = "Treetop Tree House";
 
 function range(end: number) {
   const xs = [];
