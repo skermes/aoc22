@@ -141,24 +141,30 @@ function fmtDuration(nanos: bigint): string {
   }
 }
 
+function logSolution(solution: Result<string, string>, duration: bigint) {
+  const [icon, text] = isOk(solution) ? ["🟢", solution.ok] : ["❗️", solution.err];
+  const lines = text.split("\n");
+  lines.forEach((line, i) => {
+    if (line === "") {
+      return;
+    }
+
+    const prefix = i === 0 ? icon : "  ";
+    const suffix = i === 0 ? fmtDuration(duration).padStart(5) : "";
+    console.log(prefix, line.padEnd(60), suffix);
+  });
+}
+
 function runDay(input: InputResult, day: Day): bigint {
   console.log(day.name);
 
   var duration = 0n;
   if (isOk(input)) {
     const [resultOne, durationOne] = time(trap(day.partOne.bind(null, input.ok)));
-    if (isOk(resultOne)) {
-      console.log("🟢", resultOne.ok.padEnd(60), fmtDuration(durationOne).padStart(5));
-    } else {
-      console.log("❗️", resultOne.err);
-    }
+    logSolution(resultOne, durationOne);
 
     const [resultTwo, durationTwo] = time(trap(day.partTwo.bind(null, input.ok)));
-    if (isOk(resultTwo)) {
-      console.log("🟢", resultTwo.ok.padEnd(60), fmtDuration(durationTwo).padStart(5));
-    } else {
-      console.log("❗️", resultTwo.err);
-    }
+    logSolution(resultTwo, durationTwo);
 
     duration = durationOne + durationTwo;
   } else {
