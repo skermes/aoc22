@@ -141,39 +141,132 @@ function fmtDuration(nanos: bigint): string {
   }
 }
 
-function logSolution(solution: Result<string, string>, duration: bigint) {
-  const [icon, text] = isOk(solution) ? ["🟢", solution.ok] : ["❗️", solution.err];
-  const lines = text.split("\n");
-  lines.forEach((line, i) => {
-    if (line === "") {
-      return;
+function breakWords(text: string, width: number) {
+  const words = text.split(" ");
+  const lines = [words[0]];
+  for (var word of words.slice(1)) {
+    // Lines is never empty, cast is safe
+    if ((lines[lines.length - 1] as string).length + word.length >= width) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] = `${lines[lines.length - 1]} ${word}`;
+    }
+  }
+  return lines;
+}
+
+function bg(r: number, g: number, b: number, text: string) {
+  return `\u001B[48;2;${r};${g};${b}m${text}\u001B[48;5;0m`;
+}
+
+const NAME_WIDTH = 15;
+const INDICATOR_WIDTH = 2;
+const SOLUTION_WIDTH = 60;
+const TIME_WIDTH = 5;
+
+const INDICATOR_GOOD = bg(140, 200, 70, "".padEnd(INDICATOR_WIDTH));
+const INDICATOR_BAD = bg(240, 100, 50, "".padEnd(INDICATOR_WIDTH));
+const INDICATOR_WARN = bg(210, 190, 70, "".padEnd(INDICATOR_WIDTH));
+
+const FIRST_BORDER =
+  "┌" +
+  "".padEnd(NAME_WIDTH, "─") +
+  "┬" +
+  "".padEnd(INDICATOR_WIDTH, "─") +
+  "┬" +
+  "".padEnd(SOLUTION_WIDTH, "─") +
+  "┬" +
+  "".padEnd(TIME_WIDTH, "─") +
+  "┐";
+
+const DAY_SEPARATOR =
+  "├" +
+  "".padEnd(NAME_WIDTH, "─") +
+  "┼" +
+  "".padEnd(INDICATOR_WIDTH, "─") +
+  "┼" +
+  "".padEnd(SOLUTION_WIDTH, "─") +
+  "┼" +
+  "".padEnd(TIME_WIDTH, "─") +
+  "┤";
+
+const LAST_BORDER =
+  "└" +
+  "".padEnd(NAME_WIDTH, "─") +
+  "┴" +
+  "".padEnd(INDICATOR_WIDTH, "─") +
+  "┴" +
+  "".padEnd(SOLUTION_WIDTH, "─") +
+  "┴" +
+  "".padEnd(TIME_WIDTH, "─") +
+  "┘";
+
+function solutionLine(name: string | undefined, indicator: string, solution: string, time: string) {
+  return (
+    "│" +
+    (name || "").padEnd(NAME_WIDTH) +
+    "│" +
+    indicator.padEnd(INDICATOR_WIDTH) +
+    "│" +
+    solution.padEnd(SOLUTION_WIDTH) +
+    "│" +
+    time.padStart(TIME_WIDTH) +
+    "│"
+  );
+}
+
+function interDaySeparator(name: string | undefined) {
+  return (
+    "│" +
+    (name || "").padEnd(NAME_WIDTH) +
+    "├" +
+    "".padEnd(INDICATOR_WIDTH, "─") +
+    "┼" +
+    "".padEnd(SOLUTION_WIDTH, "─") +
+    "┼" +
+    "".padStart(TIME_WIDTH, "─") +
+    "┤"
+  );
+}
+
+function logDay(name: string, solutionSections: Array<[Result<string, string>, bigint]>, isFirst: boolean) {
+  const nameLines = breakWords(name, NAME_WIDTH);
+  var nextNameLine = 0;
+
+  if (isFirst) {
+    console.log(FIRST_BORDER);
+  } else {
+    console.log(DAY_SEPARATOR);
+  }
+  solutionSections.forEach(([solution, duration], i) => {
+    if (i > 0) {
+      const name = nameLines[nextNameLine];
+      nextNameLine += 1;
+      console.log(interDaySeparator(name));
     }
 
-    const prefix = i === 0 ? icon : "  ";
-    const suffix = i === 0 ? fmtDuration(duration).padStart(5) : "";
-    console.log(prefix, line.padEnd(60), suffix);
+    const indicator = isOk(solution) ? INDICATOR_GOOD : solution.err === "notYet" ? INDICATOR_WARN : INDICATOR_BAD;
+    const time = fmtDuration(duration);
+    const text = isOk(solution) ? solution.ok : solution.err;
+    text.split("\n").forEach((line, i) => {
+      if (line.length === 0) {
+        return;
+      }
+
+      const name = nameLines[nextNameLine];
+      nextNameLine += 1;
+      console.log(solutionLine(name, indicator, line, i === 0 ? time : ""));
+    });
   });
 }
 
-function runDay(input: InputResult, day: Day): bigint {
-  console.log(day.name);
+function runDay(input: InputResult, day: Day, isFirst: boolean): bigint {
+  const sections: Array<[Result<string, string>, bigint]> = isOk(input)
+    ? [time(trap(day.partOne.bind(null, input.ok))), time(trap(day.partTwo.bind(null, input.ok)))]
+    : [[input, 0n]];
 
-  var duration = 0n;
-  if (isOk(input)) {
-    const [resultOne, durationOne] = time(trap(day.partOne.bind(null, input.ok)));
-    logSolution(resultOne, durationOne);
-
-    const [resultTwo, durationTwo] = time(trap(day.partTwo.bind(null, input.ok)));
-    logSolution(resultTwo, durationTwo);
-
-    duration = durationOne + durationTwo;
-  } else {
-    console.log("❗️", input.err);
-  }
-
-  console.log();
-
-  return duration;
+  logDay(day.name, sections, isFirst);
+  return sections.reduce((sum, section) => sum + section[1], 0n);
 }
 
 const dayArg = Number.parseInt(process.argv[process.argv.length - 1] || "");
@@ -183,14 +276,15 @@ const targetDays = Number.isNaN(dayArg)
 
 var totalDuration = 0n;
 
-targetDays.forEach((i) => {
-  const day = DAY_MODULES[i - 1];
+targetDays.forEach((dayIndex, i) => {
+  const day = DAY_MODULES[dayIndex - 1];
   if (!day) {
-    console.log("❗️ Unknown day", day);
+    logDay("", [[{ err: "badDay" }, 0n]], true);
   } else {
-    withInput(i, (result) => (totalDuration += runDay(result, day)));
+    withInput(dayIndex, (result) => (totalDuration += runDay(result, day, i === 0)));
   }
 });
 
-console.log("".padEnd(70, "─"));
-console.log("Total:", fmtDuration(totalDuration).padStart(62));
+console.log(DAY_SEPARATOR);
+console.log(solutionLine("", "", "Total".padStart(SOLUTION_WIDTH), fmtDuration(totalDuration)));
+console.log(LAST_BORDER);
