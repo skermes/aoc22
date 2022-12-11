@@ -126,7 +126,9 @@ function trap<T>(fn: () => Result<T, string>): () => Result<T, string> {
 }
 
 function fmtDuration(nanos: bigint): string {
-  if (nanos < 1_000) {
+  if (nanos === 0n) {
+    return "";
+  } else if (nanos < 1_000) {
     return `${nanos}ns`;
   } else if (nanos < 1_000_000) {
     return `${nanos / 1000n}µs`;
