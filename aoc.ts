@@ -171,7 +171,7 @@ const INDICATOR_BAD = bg(240, 100, 50, "".padEnd(INDICATOR_WIDTH));
 const INDICATOR_WARN = bg(210, 190, 70, "".padEnd(INDICATOR_WIDTH));
 
 const FIRST_BORDER =
-  "┌" +
+  "╭" +
   "".padEnd(NAME_WIDTH, "─") +
   "┬" +
   "".padEnd(INDICATOR_WIDTH, "─") +
@@ -179,7 +179,7 @@ const FIRST_BORDER =
   "".padEnd(SOLUTION_WIDTH, "─") +
   "┬" +
   "".padEnd(TIME_WIDTH, "─") +
-  "┐";
+  "╮";
 
 const DAY_SEPARATOR =
   "├" +
@@ -193,7 +193,7 @@ const DAY_SEPARATOR =
   "┤";
 
 const LAST_BORDER =
-  "└" +
+  "╰" +
   "".padEnd(NAME_WIDTH, "─") +
   "┴" +
   "".padEnd(INDICATOR_WIDTH, "─") +
@@ -201,7 +201,7 @@ const LAST_BORDER =
   "".padEnd(SOLUTION_WIDTH, "─") +
   "┴" +
   "".padEnd(TIME_WIDTH, "─") +
-  "┘";
+  "╯";
 
 function solutionLine(name: string | undefined, indicator: string, solution: string, time: string) {
   return (
