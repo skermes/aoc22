@@ -43,15 +43,16 @@ function at(map: number[][], point: [number, number]) {
 }
 
 function aStarDistance(
-  start: [number, number],
+  starts: [number, number][],
   heuristic: (candidate: [number, number]) => number,
   finished: (candidate: [number, number]) => boolean,
   canTraverse: (here: [number, number], there: [number, number]) => boolean
 ) {
   const distances: Record<string, number> = {
-    [start.toString()]: 0,
+    // [start.toString()]: 0,
   };
-  var toVisit: [number, number][] = [start];
+  starts.forEach((start) => (distances[start.toString()] = 0));
+  var toVisit: [number, number][] = [...starts];
 
   var iterations = 0;
   while (toVisit.length > 0) {
@@ -117,7 +118,7 @@ export function partOne(input: string): Result<string, string> {
     return at(map.map, there) <= at(map.map, here) + 1;
   }
 
-  const distance = aStarDistance(map.start, heuristic, finished, canTraverse);
+  const distance = aStarDistance([map.start], heuristic, finished, canTraverse);
   if (!isOk(distance)) {
     return distance;
   }
@@ -132,24 +133,34 @@ export function partTwo(input: string): Result<string, string> {
 
   const map = mapResult.ok;
 
-  // This part takes a lot longer than the first, I think because I get stuck in the ocean of `c` spots, where all the
-  // identical heights make A^ fall back to BFS. I tried including the x position in the heuristic which I thought would
-  // drive it toward the column of `b`s on the left, but no dice.
   function heuristic(candidate: [number, number]) {
-    return at(map.map, candidate);
+    const mahattan = Math.abs(map.end[0] - candidate[0]) + Math.abs(map.end[1] - candidate[1]);
+    return mahattan;
   }
 
   function finished(candidate: [number, number]) {
-    return at(map.map, candidate) === 0;
+    return candidate[0] === map.end[0] && candidate[1] === map.end[1];
   }
 
   function canTraverse(here: [number, number], there: [number, number]) {
-    return at(map.map, here) <= at(map.map, there) + 1;
+    return at(map.map, there) <= at(map.map, here) + 1;
   }
 
-  const distance = aStarDistance(map.end, heuristic, finished, canTraverse);
+  const as = range(map.map.length)
+    .flatMap((row) => range((map.map[0] as number[]).length).map((col) => [row, col] as [number, number]))
+    .filter((point) => at(map.map, point) === 0);
+
+  const distance = aStarDistance(as, heuristic, finished, canTraverse);
   if (!isOk(distance)) {
     return distance;
   }
   return { ok: distance.ok.toString() };
+}
+
+function range(end: number) {
+  const xs = [];
+  for (var i = 0; i < end; i++) {
+    xs.push(i);
+  }
+  return xs;
 }
