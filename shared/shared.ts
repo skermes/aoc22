@@ -10,6 +10,8 @@ declare global {
     forEachFallible<E>(fn: (val: T) => Result<null, E>): Result<null, E>;
 
     reductions<T2>(fn: (acc: T2, val: T, i: number) => T2, initial?: T2): Array<T2>;
+
+    minBy(fn: (value: T) => number): T | undefined;
   }
 }
 
@@ -43,6 +45,20 @@ Array.prototype.reductions = function <T, T2>(fn: (acc: T2, value: T, i: number)
   list.forEach((val, i) => output.push(fn(output[output.length - 1], val, i)));
 
   return output;
+};
+
+Array.prototype.minBy = function <T>(fn: (value: T) => number): T | undefined {
+  var minScore = Infinity;
+  var minValue = undefined;
+  this.forEach((value) => {
+    const score = fn(value);
+    if (score < minScore) {
+      minScore = score;
+      minValue = value;
+    }
+  });
+
+  return minValue;
 };
 
 export function zip2<T1, T2>(as: Array<T1>, bs: Array<T2>): Array<[T1, T2]> {
