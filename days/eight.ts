@@ -1,14 +1,6 @@
-import { Result, zip2, zip4 } from "../shared/shared";
+import { range, Result, zip2, zip4 } from "../shared/shared";
 
 export const name = "Treetop Tree House";
-
-function range(end: number) {
-  const xs = [];
-  for (var i = 0; i < end; i++) {
-    xs.push(i);
-  }
-  return xs;
-}
 
 function reverseRows<T>(matrix: T[][]) {
   return matrix.map((row) => {

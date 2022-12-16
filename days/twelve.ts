@@ -1,4 +1,4 @@
-import { isOk, Result } from "../shared/shared";
+import { isOk, range, Result } from "../shared/shared";
 
 export const name = "Hill Climbing Algorithm";
 
@@ -155,12 +155,4 @@ export function partTwo(input: string): Result<string, string> {
     return distance;
   }
   return { ok: distance.ok.toString() };
-}
-
-function range(end: number) {
-  const xs = [];
-  for (var i = 0; i < end; i++) {
-    xs.push(i);
-  }
-  return xs;
 }

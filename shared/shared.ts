@@ -82,3 +82,16 @@ export function zip4<T1, T2, T3, T4>(
 ): Array<[T1, T2, T3, T4]> {
   return zip2(zip2(as, bs), zip2(cs, ds)).map(([[a, b], [c, d]]) => [a, b, c, d]);
 }
+
+export function range(a: number, b?: number, c?: number) {
+  const start = b ? a : 0;
+  const stop = b ? b : a;
+  const step = c ? c : 1;
+
+  const values = [];
+  for (var i = start; i < stop; i += step) {
+    values.push(i);
+  }
+
+  return values;
+}
