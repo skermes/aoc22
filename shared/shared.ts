@@ -2,6 +2,13 @@ export type Result<T, E> = { ok: T } | { err: E };
 export function isOk<T, _>(result: any): result is { ok: T } {
   return result.ok !== undefined;
 }
+export function mapOk<T1, T2, E>(result: Result<T1, E>, fn: (val: T1) => T2): Result<T2, E> {
+  if (isOk(result)) {
+    return { ok: fn(result.ok) };
+  } else {
+    return result;
+  }
+}
 
 declare global {
   interface Array<T> {

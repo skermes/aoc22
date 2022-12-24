@@ -1,4 +1,4 @@
-import { isOk, Result } from "../shared/shared";
+import { isOk, mapOk, Result } from "../shared/shared";
 
 export const name = "Monkey Math";
 
@@ -77,23 +77,84 @@ function evaluate(
   return { ok: value };
 }
 
-export function pprint(bindings: Record<string, Expression>, name: string): string {
+export function pprint(expr: NestedExpression): string {
   // console.log("pprinting", name);
-  if (name === "humn") {
-    return "human";
+  if (expr.type === 'variable') {
+    return expr.name;
   }
 
-  const binding = bindings[name] as Expression;
-
-  if (binding.type === "literal") {
-    return binding.value.toString();
+  if (expr.type === "literal") {
+    return expr.value.toString();
   }
 
-  if (name === "root") {
-    return `${pprint(bindings, binding.left)} = ${pprint(bindings, binding.right)}`;
+  // if (name === "root") {
+  //   return `${pprint(bindings, binding.left)} = ${pprint(bindings, binding.right)}`;
+  // }
+
+  return `(${pprint(expr.left)} ${expr.op} ${pprint(expr.right)})`;
+}
+
+type NestedExpression =
+  | { type: "literal"; value: number }
+  | { type: "variable"; name: string }
+  | { type: "expression"; left: NestedExpression; right: NestedExpression; op: Op };
+
+function simplify(bindings: Record<string, Expression>, name: string): NestedExpression {
+  if (name === 'humn') {
+    return { type: 'variable', name: 'humn'}
   }
 
-  return `(${pprint(bindings, binding.left)} ${binding.op} ${pprint(bindings, binding.right)})`;
+  const expr = bindings[name] as Expression;
+  if (expr.type === 'literal') {
+    return { type: 'literal', value: expr.value}
+  }
+
+  const left = simplify(bindings, expr.left);
+  const right = simplify(bindings, expr.right);
+
+  if (left.type === 'literal' && right.type === 'literal') {
+    return { type: 'literal', value: evalExpr(left.value, right.value, expr.op)}
+  }
+
+  return { type: 'expression', left, right, op: expr.op};
+}
+
+function solveForHumn(expr: NestedExpression, constant: number): Result<number, string> {
+  if (expr.type === 'literal') {
+    return { err: 'left hand side must be expression or variable' }
+  }
+
+  if (expr.type === 'variable') {
+    return { ok: constant }
+  }
+
+  // Because there's only one variable in the puzzle we know that exactly one side of the simplified expression must
+  // be a constant.
+  if (expr.left.type === 'literal') {
+    // 2 + right = constant -> right = constant - 2
+    // 2 - right = constant -> right * -1 = constant - 2
+    // 2 * right = constant -> right = constant / 2
+    // 2 / right = constant -> 1 / right = constant * 2 -> infinite recursion err
+    switch (expr.op) {
+      case '+': return solveForHumn(expr.right, constant - expr.left.value)
+      case '-': return solveForHumn({ type: 'expression', left: expr.right, right: { type: 'literal', value: -1 }, op: '*' }, constant - expr.left.value)
+      case '*': return solveForHumn(expr.right, constant / expr.left.value)
+      case '/': return { err: 'variable in denominator, no trivial simplification'} 
+    }
+  } else if (expr.right.type === 'literal') {
+    // left + 2 = constant -> left = constant - 2
+    // left - 2 = constant -> left = constant + 2
+    // left * 2 = constant -> left = constant / 2
+    // left / 2 = constant -> left = constant * 2
+    switch (expr.op) {
+      case '+': return solveForHumn(expr.left, constant - expr.right.value)
+      case '-': return solveForHumn(expr.left, constant + expr.right.value)
+      case '*': return solveForHumn(expr.left, constant / expr.right.value)
+      case '/': return solveForHumn(expr.left, constant * expr.right.value)
+    }
+  } else {
+    return { err: 'too many variables in left hand side'}
+  }
 }
 
 export const EXAMPLE = `root: pppw + sjmn
@@ -138,7 +199,19 @@ export function partTwo(input: string): Result<string, string> {
   const bindingsMap: Record<string, Expression> = {};
   bindings.ok.forEach((b) => (bindingsMap[b.name] = b.expr));
 
-  console.log(pprint(bindingsMap, "root"));
+  const root = simplify(bindingsMap, 'root');
+  if (root.type !== 'expression') {
+    return { err: 'root isn\'t an expression' }
+  }
 
-  return { err: "notImplemented" };
+  // root.op = '=' as Op; // Cheating to make the print nicer
+  // console.log(pprint(root));
+
+  if (root.left.type === 'literal') {
+    return mapOk(solveForHumn(root.right, root.left.value), x => x.toString());
+  } else if (root.right.type === 'literal') {
+    return mapOk(solveForHumn(root.left, root.right.value), x => x.toString())
+  }
+
+  return { err: "Too many variables in expression" };
 }
